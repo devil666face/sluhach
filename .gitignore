@@ -1,0 +1,7 @@
+libvosk.so
+vosk-model-ru-0.42.zip
+vosk_api.h
+vosk-model-small-ru-0.22
+vosk-model-small-ru-0.22.zip
+.aider*
+bin/sluhach

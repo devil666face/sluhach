@@ -1,0 +1,50 @@
+version: 3
+
+vars:
+  gobin: go
+  ldflags: "-w -s -buildid="
+  gcflags: "all=-trimpath={{.PWD}} -dwarf=false -l"
+  asmflags: "all=-trimpath={{.PWD}}"
+  bin: "{{.PWD}}/bin"
+  app: "sluhach"
+  app_bin: "{{.bin}}/{{.app}}"
+
+tasks:
+  release:
+    desc: release
+    cmds:
+      - task vosk.api
+      - task vosk.model
+
+  build:
+    desc: build
+    cmds:
+      - >
+        CGO_CFLAGS="-I$(pwd)" CGO_LDFLAGS="-L$(pwd) -Wl,-rpath,$(pwd)" CGO_ENABLED=1
+        {{.gobin}} build
+        -tags netgo
+        -ldflags="{{.ldflags}}" 
+        -trimpath 
+        -gcflags="{{.gcflags}}" 
+        -asmflags="{{.asmflags}}"
+        -o {{.app_bin}} cmd/{{.app}}/main.go
+      - strip {{.app_bin}}
+      - objcopy --strip-unneeded {{.app_bin}}
+
+  vosk.api:
+    desc: download vosk from github
+    cmds:
+      - wget https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-linux-x86_64-0.3.45.zip
+      - unzip vosk-linux-x86_64-0.3.45.zip
+      - mv vosk-linux-x86_64-0.3.45/vosk_api.h .
+      - mv vosk-linux-x86_64-0.3.45/libvosk.so .
+      - rm -rf vosk-linux-x86_64-0.3.45.zip vosk-linux-x86_64-0.3.45/
+
+  vosk.model:
+    desc: download model
+    # https://alphacephei.com/vosk/models
+    cmds:
+      - wget https://alphacephei.com/vosk/models/vosk-model-ru-0.42.zip
+      - wget https://alphacephei.com/vosk/models/vosk-model-small-ru-0.22.zip
+      - unzip vosk-model-ru-0.42.zip || true
+      - unzip vosk-model-small-ru-0.22.zip || true
