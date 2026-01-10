@@ -22,7 +22,7 @@ func New(
 	if err != nil {
 		return nil, fmt.Errorf("config error: %w", err)
 	}
-	_stt := stt.New()
+	_stt := stt.New(_config.ModelDir)
 	_manager := models.New(_config.ModelDir)
 	_cmd := command.New(
 		_stt,

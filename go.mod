@@ -3,15 +3,16 @@ module sluhach
 go 1.25.5
 
 require (
+	charm.land/lipgloss/v2 v2.0.0-beta.3.0.20251106193318-19329a3e8410
 	github.com/PuerkitoBio/goquery v1.11.0
 	github.com/alphacep/vosk-api/go v0.3.50
+	github.com/atotto/clipboard v0.1.4
 	github.com/charmbracelet/fang v0.4.4
 	github.com/gordonklaus/portaudio v0.0.0-20250206071425-98a94950218b
 	github.com/spf13/cobra v1.10.2
 )
 
 require (
-	charm.land/lipgloss/v2 v2.0.0-beta.3.0.20251106193318-19329a3e8410 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/charmbracelet/colorprofile v0.3.3 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20251106190538-99ea45596692 // indirect

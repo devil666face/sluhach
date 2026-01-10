@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -14,18 +15,27 @@ import (
 )
 
 type Speach2Text struct {
+	modelDir string
 }
 
 // sudo apt-get install portaudio19-dev
 // sudo dnf install portaudio-devel
-func New() *Speach2Text {
-	return &Speach2Text{}
+func New(
+	_modelDir string,
+) *Speach2Text {
+	vosk.SetLogLevel(-1)
+
+	return &Speach2Text{
+		modelDir: _modelDir,
+	}
 }
 
 func (s *Speach2Text) Start(
 	path string,
 	wait int,
 ) (string, error) {
+	path = filepath.Join(s.modelDir, path)
+
 	if err := fs.Exists(path); err != nil {
 		return "", fmt.Errorf("source vosk model not found: %w", err)
 	}
@@ -72,7 +82,7 @@ func (s *Speach2Text) Start(
 				return
 			}
 			if text != "" {
-				fmt.Println("recognized:", text)
+				// fmt.Println("recognized:", text)
 				collected = append(collected, text)
 				lastTime = time.Now()
 			}
@@ -87,7 +97,7 @@ func (s *Speach2Text) Start(
 				return
 			}
 			if text != "" {
-				fmt.Println("temp:", text)
+				// fmt.Println("temp:", text)
 				lastTime = time.Now()
 			}
 		}

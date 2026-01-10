@@ -21,7 +21,7 @@ const (
 
 type Manager struct {
 	base     string
-	ModelDir string
+	modelDir string
 	client   *http.Client
 }
 
@@ -39,7 +39,7 @@ func New(
 
 	return &Manager{
 		base:     _base,
-		ModelDir: modelDir,
+		modelDir: modelDir,
 		client:   client,
 	}
 }
@@ -50,7 +50,7 @@ func (m *Manager) Load(model string) error {
 	// формируем URL архива
 	url := fmt.Sprintf("%s/%s.zip", strings.TrimRight(m.base, "/"), model)
 
-	tmp, err := os.CreateTemp(m.ModelDir, model+"-*.zip")
+	tmp, err := os.CreateTemp(m.modelDir, model+"-*.zip")
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
@@ -92,8 +92,7 @@ func (m *Manager) Load(model string) error {
 				}
 				downloaded += int64(n)
 				percent := float64(downloaded) * 100 / float64(total)
-				remaining := total - downloaded
-				fmt.Printf("\rdownloaded: %.1f%% (%d / %d bytes, %d bytes remaining)", percent, downloaded, total, remaining)
+				fmt.Printf("\r⬇️ downloaded: %.1f%% (%d / %d bytes)", percent, downloaded, total)
 			}
 			if _err == io.EOF {
 				break
@@ -114,7 +113,7 @@ func (m *Manager) Load(model string) error {
 		return fmt.Errorf("failed to close temp file: %w", err)
 	}
 
-	if err := fs.Unzip(path, m.ModelDir); err != nil {
+	if err := fs.Unzip(path, m.modelDir); err != nil {
 		return fmt.Errorf("failed to unzip model: %w", err)
 	}
 
@@ -194,29 +193,32 @@ func (m *Manager) Avail() ([]Model, error) {
 }
 
 func (m *Manager) Remove(model string) error {
-	models, err := fs.List(m.ModelDir)
+	models, err := fs.List(m.modelDir)
 	if err != nil {
 		return fmt.Errorf("failed to get models list: %w", err)
 	}
 	if !slices.Contains(models, model) {
 		return fmt.Errorf("model %s not exists", model)
 	}
-	if err := fs.Remove(path.Join(m.ModelDir, model)); err != nil {
+	if err := fs.Remove(path.Join(m.modelDir, model)); err != nil {
 		return fmt.Errorf("failed to remove: %w", err)
 	}
 	return nil
 }
 
 func (m *Manager) List() ([]Model, error) {
-	_models, err := fs.List(m.ModelDir)
+	_models, err := fs.List(m.modelDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get models list: %w", err)
+	}
+	if len(_models) == 0 {
+		return nil, fmt.Errorf("no models loaded")
 	}
 	var models []Model
 	for _, name := range _models {
 		models = append(models, Model{
 			Name: name,
-			Path: filepath.Join(m.ModelDir, name),
+			Path: filepath.Join(m.modelDir, name),
 		})
 	}
 	return models, nil

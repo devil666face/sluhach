@@ -3,7 +3,6 @@ package command
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"strings"
 	"text/tabwriter"
 
@@ -11,6 +10,7 @@ import (
 	"sluhach/pkg/stt"
 
 	"charm.land/lipgloss/v2"
+	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/fang"
 	"github.com/spf13/cobra"
 )
@@ -50,7 +50,7 @@ func (cmd *Command) avail() func(*cobra.Command, []string) error {
 			)
 		}
 		w.Flush()
-		fmt.Println(
+		c.Println(
 			lipgloss.NewStyle().
 				Padding(0, 1).
 				Render(sb.String()),
@@ -86,7 +86,7 @@ func (cmd *Command) list() func(*cobra.Command, []string) error {
 			)
 		}
 		w.Flush()
-		fmt.Println(
+		c.Println(
 			lipgloss.NewStyle().
 				Padding(0, 1).
 				Render(sb.String()),
@@ -97,12 +97,19 @@ func (cmd *Command) list() func(*cobra.Command, []string) error {
 
 func (cmd *Command) reco(model *string, wait *int, noPaste *bool) func(*cobra.Command, []string) error {
 	return func(c *cobra.Command, s []string) error {
-		c.Println("speak...", fmt.Sprintf("(wait %d sec for close)", *wait))
-		out, err := cmd.stt.Start(filepath.Join(cmd.manager.ModelDir, *model), *wait)
+		c.Println("🎤 listen", fmt.Sprintf("(wait %d sec for close)", *wait))
+		out, err := cmd.stt.Start(*model, *wait)
 		if err != nil {
 			return err
 		}
-		c.Println("finaly:", out)
+		c.Println(out)
+
+		if !*noPaste && out != "" {
+			if err := clipboard.WriteAll(out); err != nil {
+				return fmt.Errorf("failed to copy to clipboard: %w", err)
+			}
+			c.Println("📌 copied to clipboard")
+		}
 		return nil
 	}
 }
