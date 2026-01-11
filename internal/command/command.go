@@ -31,15 +31,22 @@ type Command struct {
 
 func (cmd *Command) reco(model *string, wait *int, noPaste *bool) func(*cobra.Command, []string) error {
 	return func(c *cobra.Command, s []string) error {
+		m, err := cmd.stt.LoadModel(*model)
+		if err != nil {
+			return err
+		}
+		defer m.Free()
+
 		c.Println(listen, fmt.Sprintf("(waiting for %d seconds of silence to stop)", *wait))
 		if err := notify.Notify(recordStarted, listen); err != nil {
 			return err
 		}
 
-		out, err := cmd.stt.Start(*model, *wait)
+		out, err := cmd.stt.Recognize(m, *wait)
 		if err != nil {
 			return err
 		}
+
 		if out != "" {
 			c.Println(out)
 

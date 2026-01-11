@@ -30,27 +30,26 @@ func New(
 	}
 }
 
-func (s *Speach2Text) Start(
-	path string,
-	wait int,
-) (string, error) {
+func (s *Speach2Text) LoadModel(path string) (*vosk.VoskModel, error) {
 	path = filepath.Join(s.modelDir, path)
 
 	if err := fs.Exists(path); err != nil {
-		return "", fmt.Errorf("source vosk model not found: %w", err)
+		return nil, fmt.Errorf("source vosk model not found: %w", err)
 	}
 
 	model, err := vosk.NewModel(path)
 	if err != nil {
-		return "", fmt.Errorf("failed to load vosk model: %w", err)
+		return nil, fmt.Errorf("failed to load vosk model: %w", err)
 	}
-	defer model.Free()
 
+	return model, nil
+}
+
+func (s *Speach2Text) Recognize(model *vosk.VoskModel, wait int) (string, error) {
 	rec, err := vosk.NewRecognizer(model, 16000.0)
 	if err != nil {
 		return "", fmt.Errorf("failed to create recognizer: %w", err)
 	}
-
 	defer rec.Free()
 
 	if err := portaudio.Initialize(); err != nil {
@@ -82,7 +81,6 @@ func (s *Speach2Text) Start(
 				return
 			}
 			if text != "" {
-				// fmt.Println("recognized:", text)
 				collected = append(collected, text)
 				lastTime = time.Now()
 			}
@@ -97,7 +95,6 @@ func (s *Speach2Text) Start(
 				return
 			}
 			if text != "" {
-				// fmt.Println("temp:", text)
 				lastTime = time.Now()
 			}
 		}
@@ -127,6 +124,19 @@ func (s *Speach2Text) Start(
 	}
 
 	return strings.Join(collected, "\n"), nil
+}
+
+func (s *Speach2Text) Start(
+	path string,
+	wait int,
+) (string, error) {
+	model, err := s.LoadModel(path)
+	if err != nil {
+		return "", err
+	}
+	defer model.Free()
+
+	return s.Recognize(model, wait)
 }
 
 func int16ToBytes(input []int16) []byte {
