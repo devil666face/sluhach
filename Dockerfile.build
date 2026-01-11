@@ -1,0 +1,27 @@
+FROM ubuntu:16.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=UTC
+
+RUN apt-get update && \
+    apt-get install --yes \
+    curl openssl zip wget tar ca-certificates \
+    build-essential git patchelf \
+    portaudio19-dev \
+    && apt-get clean \
+    && rm --recursive --force /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE /etc/localtime && echo $CONTAINER_TIMEZONE > /etc/timezone && \
+  sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/bin
+
+RUN wget https://go.dev/dl/go1.25.5.linux-amd64.tar.gz && \
+    tar -xf go1.25.5.linux-amd64.tar.gz
+
+ENV PATH="${PATH}:/go/bin:/root/go/bin"
+
+WORKDIR /build
+
+COPY . .
+
+CMD ["task",".build"]
+

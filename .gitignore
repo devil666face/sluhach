@@ -5,3 +5,4 @@ vosk-model-small-ru-0.22
 vosk-model-small-ru-0.22.zip
 .aider*
 bin/sluhach
+bin/sluhach-amd64-gnu.tar.gz

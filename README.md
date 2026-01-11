@@ -17,6 +17,15 @@ manage local and remote models.
 - Desktop notifications on recording start and finish
 - Manage Vosk models (list, load/download, remove, show available)
 
+## Install
+
+```bash
+tar -xf sluhach-amd64-gnu.tar.gz
+sudo mv libvosk.so /usr/lib/
+sudo mv sluhach /usr/local/bin
+sudo ldconfig
+```
+
 ## Basic Usage
 
 Run `sluhach` without arguments to see the built‑in help:

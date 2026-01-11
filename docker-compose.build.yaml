@@ -1,0 +1,15 @@
+services:
+  sluhach:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    image: sluhach:go
+    environment:
+      - GOCACHE=/go/cache
+      - GOMODCACHE=/go/pkg/mod
+    volumes:
+      - ./bin:/build/bin
+      - /tmp/go-cache:/go/cache
+      - /tmp/go-mod:/go/pkg/mod
+    container_name: sluhach-go
+    network_mode: host

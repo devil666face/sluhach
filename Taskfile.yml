@@ -10,11 +10,19 @@ vars:
   app_bin: "{{.bin}}/{{.app}}"
 
 tasks:
-  release:
-    desc: release
+  setup:
+    desc: set up the environment
+    silent: true
     cmds:
-      - task vosk.api
-      - task vosk.model
+      - mkdir -p {{.bin}}
+
+  release:
+    desc: build bin via docker
+    deps:
+      - setup
+    silent: false
+    cmds:
+      - docker compose -f docker-compose.build.yaml up --build --force-recreate
 
   build:
     desc: build
@@ -30,6 +38,16 @@ tasks:
         -o {{.app_bin}} cmd/{{.app}}/main.go
       - strip {{.app_bin}}
       - objcopy --strip-unneeded {{.app_bin}}
+
+  .build:
+    silent: false
+    cmds:
+      - rm -f /build/bin/*
+      - task vosk.api
+      - task build
+      - patchelf --set-rpath '.:$ORIGIN' {{.app_bin}}
+      - cp {{.app_bin}} . && tar -cvzf {{.app}}-amd64-gnu.tar.gz ./{{.app}} ./libvosk.so
+      - mv {{.app}}-amd64-gnu.tar.gz {{.app_bin}}* /build/bin
 
   vosk.api:
     desc: download vosk from github

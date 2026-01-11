@@ -1,0 +1,6 @@
+/bin
+/docker-compose.build.yaml
+/Dockerfile.build
+/libvosk.so
+/README.md
+/vosk_api.h
